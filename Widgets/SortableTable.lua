@@ -81,11 +81,33 @@ function TableBuilder:BuildArrow(parent)
     arrow:SetWidth(pp(16))
     arrow:SetHeight(pp(16))
     arrow:SetFrameStrata("FULLSCREEN_DIALOG")
+
+    local arrowIndex = parent.obj.arrowIndices[parent.index]
+    if arrowIndex > 1 then
+        local texture = ARROW_TEXTURES[arrowIndex - 1]
+
+        if texture == ARROW_TEXTURES[1] then
+            arrow:SetPoint("TOPLEFT", parent, "TOPRIGHT", pp(-20), pp(-5))
+            arrow:SetPoint("BOTTOMLEFT", parent, "BOTTOMRIGHT", pp(-20), 0)
+        elseif texture == ARROW_TEXTURES[2] then
+            arrow:SetPoint("TOPLEFT", parent, "TOPRIGHT", pp(-20), 0)
+            arrow:SetPoint("BOTTOMLEFT", parent, "BOTTOMRIGHT", pp(-20), pp(5))
+        end
+        arrow:SetNormalTexture(texture)
+    else
+        arrow:SetNormalTexture(nil)
+    end
+
     return arrow
 end
 
 function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     local btn = CreateFrame("Button", widgetType .. "Heading" .. heading.slug, parent)
+    btn.obj = parent.obj
+    btn.parent = parent
+    btn.slug = heading.slug
+    btn.index = index
+
     btn:Point("TOPLEFT", parent, "TOPLEFT", pp(offset - 1), 0)
     btn:SetWidth(pp(size - 1))
     btn:SetHeight(pp(ROW_HEIGHT))
@@ -112,9 +134,6 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     end
 
     btn.arrow = self:BuildArrow(btn)
-    btn.parent = parent
-    btn.slug = heading.slug
-    btn.index = index
     return btn
 end
 
@@ -195,21 +214,12 @@ local function Button_OnClick(frame, ...)
         arrowIndex = 1
     end
 
+    for i in ipairs(widget.arrowIndices) do
+        widget.arrowIndices[i] = 1
+    end
+
     local newData = {}
     if arrowIndex > 1 then
-        local texture = ARROW_TEXTURES[arrowIndex - 1]
-        if texture == "Interface\\Buttons\\Arrow-Down-Down" then
-            frame.arrow:ClearAllPoints()
-            frame.arrow:SetPoint("TOPLEFT", frame, "TOPRIGHT", pp(-20), pp(-5))
-            frame.arrow:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", pp(-20), 0)
-        elseif texture == "Interface\\Buttons\\Arrow-Up-Down" then
-            frame.arrow:ClearAllPoints()
-            frame.arrow:SetPoint("TOPLEFT", frame, "TOPRIGHT", pp(-20), 0)
-            frame.arrow:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", pp(-20), pp(5))
-        end
-        frame.arrow:SetNormalTexture(texture)
-        frame.arrow:Show()
-
         local heading = widget.headings[frame.index]
         newData = Addon.utils.table.copy(widget.data)
         table.sort(newData, function(a,b)
@@ -222,7 +232,6 @@ local function Button_OnClick(frame, ...)
             end
         end)
     else
-        --frame.arrow:SetNormalTexture(nil)
         newData = widget.unsortedData
     end
 
