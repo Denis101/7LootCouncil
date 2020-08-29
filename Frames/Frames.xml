@@ -1,0 +1,6 @@
+<Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+  <Include file="AddonSettings\AddonSettings.xml"/>
+  <Script file="LootHistory.lua"/>
+  <Script file="VoteWindow.lua"/>
+  <Script file="DebugWindow.lua"/>
+</Ui>

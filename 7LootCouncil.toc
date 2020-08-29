@@ -1,0 +1,16 @@
+## Interface: 11305
+## Title: 7LootCouncil
+## Notes: A proper loot council addon for Classic
+## Author: Disgust
+## Version: 11305.0.1
+## SavedVariables: SevenLootCouncil
+## SavedVariablesPerCharacter: SevenLootCouncilPrivate 
+
+utils\utils.xml
+Libs\Libs.xml
+Settings\Settings.xml
+init.lua
+Widgets\Widgets.xml
+Modules\Modules.xml
+Core\Core.xml
+Frames\Frames.xml

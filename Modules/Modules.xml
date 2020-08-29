@@ -1,0 +1,8 @@
+<Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+  <Script file="SettingsHelper.lua"/>
+  <Script file="UI.lua"/>
+  <Script file="RaidManager.lua"/>
+  <Script file="CouncilManager.lua"/>
+  <Script file="RollManager.lua"/>
+  <Script file="LootHandler.lua"/>
+</Ui>
