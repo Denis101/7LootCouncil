@@ -118,7 +118,7 @@ function Addon:ToggleOptionsUI(name)
 	end
 
 	local ACD = self.Libs.AceConfigDialog
-	local ConfigOpen = ACD and ACD.OpenFrames and ACD.OpenFrames[AddonName]
+	local ConfigOpen = ACD and ACD.OpenFrames and ACD.OpenFrames[AddonName .. name]
 
 	local mode = "Close"
 	if ConfigOpen then
@@ -132,7 +132,7 @@ function Addon:ToggleOptionsUI(name)
 	end
 
 	if mode == "Open" then
-		ConfigOpen = ACD and ACD.OpenFrames and ACD.OpenFrames[AddonName]
+		ConfigOpen = ACD and ACD.OpenFrames and ACD.OpenFrames[AddonName .. name]
 		if ConfigOpen then
 			local frame = ConfigOpen.frame
 			if frame and not self.GUIFrame then

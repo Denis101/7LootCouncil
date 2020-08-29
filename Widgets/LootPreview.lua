@@ -99,30 +99,15 @@ local function StatusUpdate(frame, elapsed)
 end
 
 local function CreateRollButton(parent, text, color, rolltype, tiptext, ...)
-	--local f = CreateFrame("Frame", nil, parent)
-	--f:SetTexture(LSM:Fetch)
-
 	local btn = CreateFrame("Button", nil, parent)
 	btn:Point(...)
-	btn:Size(FRAME_HEIGHT * .75)
-
-	-- f:SetBackdrop({
-	-- 	bgFile = LSM:Fetch("background", "Solid"),
-	-- 	edgeFile = LSM:Fetch("background", "Solid"),
-	-- 	tile = true,
-	-- 	tileEdge = true,
-	-- 	tileSize = 8,
-	-- 	edgeSize = 1,
-	-- })
+	btn:Size(Addon.utils.math.num_round(FRAME_HEIGHT * .75))
 
 	local texture = LSM:Fetch("background", "Solid")
 	btn:SetNormalTexture(texture)
 	btn:GetNormalTexture():SetColorTexture(color.r, color.g, color.b, 1)
 	btn:SetHighlightTexture(texture)
 	btn:GetHighlightTexture():SetColorTexture(1, 1, 1, .2)
-	--btn:SetDisabledTexture(texture)
-	--btn:SetBackdropBorderColor(0, 0, 0, 1)
-	--btn:SetBackdropColor(color.r, color.g, color.b, 1)
 
 	btn.color = color
 	btn.rolltype = rolltype

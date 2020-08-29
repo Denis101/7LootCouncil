@@ -67,25 +67,45 @@ Addon.DebugWindowOptions.args = {
         order = 1,
         type = "group",
         name = "Sortable Table",
-        childGroups = "select",
+        childGroups = "tab",
         args = {
             table = {
                 order = 0,
-                type = "multiselect",
+                type = "select",
                 name = "Table",
-                dialogControl = "7LC_SortableTable",
                 width = "full",
+                dialogControl = "7LC_SortableTable",
                 values = function()
                     return {
                         headings = {
-                            { slug = "name", displayText = "Name", widget = "Label", comparator = function(a,b) return a > b end, },
-                            { slug = "class", displayText = "Class", widget = "Color", comparator = function(a,b) return a > b end, },
-                            { slug = "note", displayText = "Note", widget = "Label", comparator = function(a,b) return a > b end, }
+                            {
+                                slug = "name", displayText = "Name", widget = "Label", width = 100,
+                                desc = function(a,b) return a:upper() > b:upper() end,
+                                asc = function(a,b) return a:upper() < b:upper() end,
+                            },
+                            {
+                                slug = "class", displayText = "Class", widget = "Color", width = 100,
+                                desc = function(a,b) return a:upper() > b:upper() end,
+                                asc = function(a,b) return a:upper() < b:upper() end,
+                            },
+                            {
+                                slug = "note", displayText = "Note", widget = "Label", width = 300,
+                                desc = function(a,b) return a:upper() > b:upper() end,
+                                asc = function(a,b) return a:upper() < b:upper() end,
+                            }
                         },
                         data = {
                             { "Egg", "Priest", "I'm an itiot" },
                             { "Erik", "Warlock", "Rat king prio" },
-                            { "Freedom", "Warrior", "Don't worry about it :)" }
+                            { "Freedom", "Warrior", "Don't worry about it :)" },
+                            { "Nayuta", "Rogue", "uwu" },
+                            { "Kyr", "Warrior", "Give me golden coins" },
+                            { "Mattpriest", "Priest", "hide, hide, hide, hide" },
+                            { "Sarcis", "Rogue", "Fucking yellows" },
+                            { "Mewn", "Druid", "afk /follow" },
+                            { "Wongo", "Mage", "come to my bongo bazaar" },
+                            { "Quissy", "Paladin", "guide writer prio" },
+                            { "Blodreina", "Paladin", "off-brand frosty" },
                         },
                     }
                 end,
