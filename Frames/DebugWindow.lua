@@ -79,17 +79,17 @@ Addon.DebugWindowOptions.args = {
                     return {
                         headings = {
                             {
-                                slug = "name", displayText = "Name", widget = "Label", width = 100,
+                                slug = "name", displayText = "Name", widget = "7LC_TableLabel", width = 100,
                                 desc = function(a,b) return a:upper() > b:upper() end,
                                 asc = function(a,b) return a:upper() < b:upper() end,
                             },
                             {
-                                slug = "class", displayText = "Class", widget = "Color", width = 100,
+                                slug = "class", displayText = "Class", widget = "7LC_TableClass", width = 100,
                                 desc = function(a,b) return a:upper() > b:upper() end,
                                 asc = function(a,b) return a:upper() < b:upper() end,
                             },
                             {
-                                slug = "note", displayText = "Note", widget = "Label", width = 300,
+                                slug = "note", displayText = "Note", widget = "7LC_TableLabel", width = 300,
                                 desc = function(a,b) return a:upper() > b:upper() end,
                                 asc = function(a,b) return a:upper() < b:upper() end,
                             }
@@ -109,7 +109,40 @@ Addon.DebugWindowOptions.args = {
                         },
                     }
                 end,
-            }
+            },
         }
     },
+    TableWidgets = {
+        order = 2,
+        type = "group",
+        name = "Table Widgets",
+        childGroups = "tab",
+        args = {
+            labelGroup = {
+                order = 0,
+                type = "group",
+                name = "TableLabel",
+                width = "full",
+                inline = true,
+                args = {
+                    label = {
+                        order = 0,
+                        type = "input",
+                        name = "7LC_TableLabel",
+                        width = "full",
+                        dialogControl = "7LC_TableLabel",
+                        get = function() return "This is a dumb label" end,
+                    },
+                }
+            },
+            class = {
+                order = 1,
+                type = "input",
+                name = "TableClass",
+                width = "full",
+                dialogControl = "7LC_TableClass",
+                get = function() end,
+            }
+        }
+    }
 }

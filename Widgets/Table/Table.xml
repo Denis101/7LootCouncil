@@ -1,0 +1,5 @@
+<Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+  <Script file="TableLabel.lua"/>
+  <Script file="TableClass.lua"/>
+  <Script file="SortableTable.lua"/>
+</Ui>

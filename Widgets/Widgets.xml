@@ -1,6 +1,6 @@
 <Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-  <Script file="PaginatedList.lua"/>
-  <Script file="SortableTable.lua"/>
+  <Include file="List\List.xml"/>
+  <Include file="Table\Table.xml"/>
   <Script file="RollOption.lua"/>
   <Script file="RollButton.lua"/>
   <Script file="LootRoll.lua"/>

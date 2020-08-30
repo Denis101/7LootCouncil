@@ -20,6 +20,9 @@ local PlaySound = PlaySound
 -------------------------------------------------------------------------------]]
 
 local Addon = unpack(select(2, ...))
+local AceGUI = Addon.Libs.AceGUI
+local LSM = Addon.Libs.LSM
+local pp = Addon.utils.display.pixel_perfect
 
 --[[-----------------------------------------------------------------------------
     Constants
@@ -30,11 +33,6 @@ local ROW_HEIGHT = 20
 --[[-----------------------------------------------------------------------------
     Properties
 -------------------------------------------------------------------------------]]
-
-local AceGUI = Addon.Libs.AceGUI
-local LSM = Addon.Libs.LSM
-
-local pp = Addon.utils.display.pixel_perfect
 
 local widgetType = "7LC_SortableTable"
 local widgetVersion = 1
@@ -54,26 +52,6 @@ local TableBuilder = {
 --[[-----------------------------------------------------------------------------
     Private
 -------------------------------------------------------------------------------]]
-
-local function ClearFrameTable(frames)
-    if frames == nil then
-        return
-    end
-
-    for _,frame in ipairs(frames) do
-        if frame ~= nil then
-            frame:ClearAllPoints()
-            frame:SetSize(0, 0)
-            frame:Hide()
-
-            if frame.text ~= nil then
-                frame.text:ClearAllPoints()
-                frame.text:SetSize(0, 0)
-                frame.text:Hide()
-            end
-        end
-    end
-end
 
 function TableBuilder:BuildArrow(parent)
     local arrow = CreateFrame("Button", nil, parent)
@@ -148,6 +126,9 @@ function TableBuilder:BuildRow(data, index, headings, parent)
             offset = offset + (headings[i - 1].width or 100)
         end
 
+        -- local widget = AceGUI:Create(headings[i].widget or "7LC_TableLabel")
+        -- widget:InsertInto(parent)
+
         local btn = CreateFrame("Button", widgetType .. "Row" .. index .. "-" .. i, parent)
         btn:Point("TOPLEFT", parent, "TOPLEFT", pp(offset - 1), pp(-(index * ROW_HEIGHT + 1)))
         btn:SetWidth(pp(headings[i].width - 1))
@@ -176,11 +157,11 @@ function TableBuilder:BuildRow(data, index, headings, parent)
 end
 
 function TableBuilder:Build(frame, headings, data)
-    ClearFrameTable(frame.headings)
+    Addon.utils.display.clear_frame_table(frame.headings)
 
     if frame.rows then
         for _,v in ipairs(frame.rows) do
-            ClearFrameTable(v)
+            Addon.utils.display.clear_frame_table(v)
         end
     end
 
@@ -270,8 +251,6 @@ local methods = {
         self.disabled = disabled
         TableBuilder.disabled = disabled
     end,
-    ["SetValue"] = function(self) --[[Stub for "input" types]] end,
-    ["GetValue"] = function(self) --[[Stub for "input" types]] end,
     ["SetList"] = function(self, value)
         self.headings = value.headings
         self.data = value.data
@@ -284,14 +263,12 @@ local methods = {
 
         TableBuilder:Build(self.frame, value.headings, value.data)
     end,
-    ["SetItemValue"] = function() end,
-    ["SetText"] = function(self, text)
-        self.text = text
-    end,
-    ["SetLabel"] = function(self, label)
-        self.label = label
-    end,
-    ["OnEnterPressed"] = function(self, text) --[[Stub for "input" types]] end,
+    ["SetValue"] = function() --[[Stub for "input" types]] end,
+    ["GetValue"] = function() --[[Stub for "input" types]] end,
+    ["SetItemValue"] = function() --[[Stub for "select" types]] end,
+    ["SetText"] = function() --[[Stub for "input" types]] end,
+    ["SetLabel"] = function(l) --[[Stub for "input" types]] end,
+    ["OnEnterPressed"] = function() --[[Stub for "input" types]] end,
 }
 
 --[[-----------------------------------------------------------------------------

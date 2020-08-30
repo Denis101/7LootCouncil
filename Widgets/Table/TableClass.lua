@@ -9,6 +9,7 @@ local unpack = unpack
 -------------------------------------------------------------------------------]]
 
 local CreateFrame = CreateFrame
+local PlaySound = PlaySound
 
 --[[-----------------------------------------------------------------------------
     Ace imports and initialization
@@ -24,6 +25,8 @@ local Addon = unpack(select(2, ...))
     Constants
 -------------------------------------------------------------------------------]]
 
+local ROW_HEIGHT = 20
+
 --[[-----------------------------------------------------------------------------
     Properties
 -------------------------------------------------------------------------------]]
@@ -31,8 +34,11 @@ local Addon = unpack(select(2, ...))
 local AceGUI = Addon.Libs.AceGUI
 local LSM = Addon.Libs.LSM
 
-local widgetType = "7LC_PaginatedList"
+local pp = Addon.utils.display.pixel_perfect
+
+local widgetType = "7LC_TableClass"
 local widgetVersion = 1
+
 
 --[[-----------------------------------------------------------------------------
     Private
@@ -40,9 +46,7 @@ local widgetVersion = 1
 
 local function CreateMainFrame(name, parent)
     local frame = CreateFrame("Frame", name, parent)
-    frame:Size(100, 100)
-    frame:CreateBackdrop()
-    frame:Show()
+    frame:Hide()
     return frame
 end
 
@@ -52,30 +56,20 @@ end
 
 local methods = {
     ["OnAcquire"] = function(self)
-        self.multiselect = false
         self:SetDisabled(false)
-        self:SetFullWidth(true)
     end,
     ["SetDisabled"] = function(self, disabled)
         self.disabled = disabled
-        if disabled then
-            -- do things
-        else
-            -- do other things
-        end
     end,
-    ["SetMultiselect"] = function(self, value) self.multiselect = value end,
-    ["SetValue"] = function(self, value) --[[Stub for "input" types]] end,
-    ["GetValue"] = function(self) --[[Stub for "input" types]] end,
-    ["SetList"] = function(self, list)
-    end,
+    ["SetValue"] = function() --[[Stub for "input" types]] end,
+    ["GetValue"] = function() --[[Stub for "input" types]] end,
     ["SetText"] = function(self, text)
         self.text = text
     end,
     ["SetLabel"] = function(self, label)
         self.label = label
     end,
-    ["OnEnterPressed"] = function(self, text) --[[Stub for "input" types]] end,
+    ["OnEnterPressed"] = function() --[[Stub for "input" types]] end,
 }
 
 --[[-----------------------------------------------------------------------------
