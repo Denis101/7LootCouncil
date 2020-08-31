@@ -62,6 +62,10 @@ local function hex_to_rgb(hex)
     return rn, gn, bn
 end
 
+local function capitalize(str)
+    return (str:gsub("^%l", string.upper))
+end
+
 _G.__utils__.string = {
     concat_table_values_delim = concat_table_values_delim,
     concat_table_values = concat_table_values,
@@ -72,4 +76,5 @@ _G.__utils__.string = {
     trim = trim,
     rgb_to_hex = rgb_to_hex,
     hex_to_rgb = hex_to_rgb,
+    capitalize = capitalize,
 }

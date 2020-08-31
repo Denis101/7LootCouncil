@@ -3,6 +3,7 @@
 -------------------------------------------------------------------------------]]
 
 local unpack = unpack
+local strlen = strlen
 
 --[[-----------------------------------------------------------------------------
     WoW API imports
@@ -18,7 +19,7 @@ local CreateFrame = CreateFrame
     - GlobalDB
 -------------------------------------------------------------------------------]]
 
-local Addon = unpack(select(2, ...))
+local Addon, _, GlobalDB = unpack(select(2, ...))
 local AceGUI = Addon.Libs.AceGUI
 local LSM = Addon.Libs.LSM
 
@@ -27,6 +28,7 @@ local LSM = Addon.Libs.LSM
 -------------------------------------------------------------------------------]]
 
 local DEFAULT_WIDTH = 200
+local DEFAULT_HEIGHT = 40
 
 local DEFAULT_ALPHA = .2
 local DEFAULT_HIGHLIGHT_ALPHA = .3
@@ -46,6 +48,26 @@ local widgetVersion = 1
 --[[-----------------------------------------------------------------------------
     Private
 -------------------------------------------------------------------------------]]
+
+-- TODO, move this to a non-dumb location, dummy
+local function ClassColor(class, usePriestColor)
+	if not class then return DEFAULT_NORMAL_COLOR end
+
+	local color = (_G.CUSTOM_CLASS_COLORS and _G.CUSTOM_CLASS_COLORS[class]) or _G.RAID_CLASS_COLORS[class]
+	if type(color) ~= 'table' then return DEFAULT_NORMAL_COLOR end
+
+	if not color.colorStr then
+		color.colorStr = Addon.utils.string.rgb_to_hex(color.r, color.g, color.b, 'ff')
+	elseif strlen(color.colorStr) == 6 then
+		color.colorStr = 'ff'..color.colorStr
+	end
+
+	if (usePriestColor and class == 'PRIEST') and tonumber(color.colorStr, 16) > tonumber(GlobalDB.PriestColors.colorStr, 16) then
+		return GlobalDB.PriestColors
+	else
+		return color
+	end
+end
 
 local function CreateText(frame)
     frame.children = {}
@@ -114,6 +136,7 @@ local methods = {
         self.normalColor = DEFAULT_NORMAL_COLOR
         self.highlightColor = DEFAULT_HIGHLIGHT_COLOR
         self:SetDisabled(false)
+        self:SetHeight(DEFAULT_HEIGHT)
 
         if self:GetValue() then
             self:DoLayout()
@@ -125,18 +148,6 @@ local methods = {
         self.disabled = disabled
         SetFrameTexture(self.frame, self.texture, self.normalColor, self.highlightColor, disabled)
     end,
-    ["SetTexture"] = function(self, texture)
-        self.texture = texture
-        SetFrameTexture(self.frame, texture, self.normalColor, self.highlightColor, self.disabled)
-    end,
-    ["SetNormalColor"] = function(self, color)
-        self.normalColor = color
-        SetFrameTexture(self.frame, self.texture, color, self.highlightColor, self.disabled)
-    end,
-    ["SetHighlightColor"] = function(self, color)
-        self.highlightColor = color
-        SetFrameTexture(self.frame, self.texture, self.normalColor, color, self.disabled)
-    end,
     ["SetHeading"] = function(self, heading)
         self.heading = heading
         self:SetWidth(pp(heading.width or DEFAULT_WIDTH))
@@ -146,15 +157,16 @@ local methods = {
         return self.heading and self.heading.slug
     end,
     ["SetValue"] = function(self, value)
-        self.value = value
+        self.value = Addon.utils.string.capitalize(value:lower())
+        self.normalColor = ClassColor(value, true)
         SetFrameData(self)
+        SetFrameTexture(self.frame, self.texture, self.normalColor, self.highlightColor, self.display)
     end,
     ["GetValue"] = function(self)
         return self.value
     end,
     ["SetText"] = function(self, value)
-        self.value = value
-        SetFrameData(self)
+        self:SetValue(value)
     end,
     ["SetOffset"] = function(self, x, y)
         self.offset = { x = x, y = y }
@@ -180,7 +192,7 @@ local methods = {
 
 local function Constructor()
     local widget = {
-        frame = CreateMainFrame(widgetType, Addon.UIParent),
+        frame = CreateMainFrame(widgetType),
         type = widgetType,
     }
 

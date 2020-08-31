@@ -42,4 +42,6 @@ GlobalDB.PreviewItemIds = {
 	22691,
 }
 
+GlobalDB.PriestColors = { r = 0.99, g = 0.99, b = 0.99, colorStr = 'fffcfcfc' }
+
 Engine[3] = GlobalDB

@@ -45,8 +45,6 @@ local ARROW_TEXTURES = {
 
 local TableBuilder = {
     headingOnClick = nil,
-    headingOnEnter = nil,
-    headingOnLeave = nil,
     disabled = false,
 }
 
@@ -54,35 +52,58 @@ local TableBuilder = {
     Private
 -------------------------------------------------------------------------------]]
 
+local descDefault = function(a, b)
+    return a > b
+end
+
+local descStringDefault = function(a, b)
+    return a:upper() > b:upper()
+end
+
+local ascDefault = function(a, b)
+    return a < b
+end
+
+local ascStringDefault = function(a, b)
+    return a:upper() < b:upper()
+end
+
 function TableBuilder:ClearHeadings(frame)
     Addon.utils.display.clear_frame_table(frame.headings)
     frame.headings = {}
 end
 
-function TableBuilder:BuildArrow(parent)
-    local arrow = CreateFrame("Button", nil, parent)
+function TableBuilder:BuildArrow(frame)
+    local arrow = CreateFrame("Button", nil, frame)
     arrow:SetHitRectInsets(0, 0, -10, 0)
     arrow:SetWidth(pp(16))
     arrow:SetHeight(pp(16))
     arrow:SetFrameStrata("FULLSCREEN_DIALOG")
+    return arrow
+end
 
-    local arrowIndex = parent.obj.arrowIndices[parent.index]
-    if arrowIndex > 1 then
-        local texture = ARROW_TEXTURES[arrowIndex - 1]
+function TableBuilder:ResetArrows(frame)
+    if frame.headings then
+        for i = 1, #frame.headings do
+            frame.headings[i].arrow:SetNormalTexture(nil)
+        end
+    end
+end
 
+function TableBuilder:SetArrowTexture(arrow, parent, index)
+    if index > 1 then
+        local texture = ARROW_TEXTURES[index - 1]
         if texture == ARROW_TEXTURES[1] then
-            arrow:SetPoint("TOPLEFT", parent, "TOPRIGHT", pp(-20), pp(-5))
+            arrow:SetPoint("TOPLEFT", parent, "TOPRIGHT", pp(-20), pp(-4))
             arrow:SetPoint("BOTTOMLEFT", parent, "BOTTOMRIGHT", pp(-20), 0)
         elseif texture == ARROW_TEXTURES[2] then
             arrow:SetPoint("TOPLEFT", parent, "TOPRIGHT", pp(-20), 0)
-            arrow:SetPoint("BOTTOMLEFT", parent, "BOTTOMRIGHT", pp(-20), pp(5))
+            arrow:SetPoint("BOTTOMLEFT", parent, "BOTTOMRIGHT", pp(-20), pp(6))
         end
         arrow:SetNormalTexture(texture)
     else
         arrow:SetNormalTexture(nil)
     end
-
-    return arrow
 end
 
 function TableBuilder:BuildHeading(index, heading, parent, size, offset)
@@ -115,8 +136,6 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
         btn:GetHighlightTexture():SetColorTexture(.6, .6, .6, .5)
 
         btn:SetScript("OnClick", self.headingOnClick)
-        btn:SetScript("OnEnter", self.headingOnEnter)
-        btn:SetScript("OnLeave", self.headingOnLeave)
     end
 
     btn.arrow = self:BuildArrow(btn)
@@ -154,13 +173,27 @@ function TableBuilder:BuildHeadings(frame, headings)
     return offset + (headings[#headings].width or DEFAULT_ROW_WIDTH), height
 end
 
-local function BuildRowFunc(widget, headings, index, value, xOfs, yOfs, height)
-    local rowWidget = AceGUI:Create(headings[index].widget or "7LC_TableLabel")
-    rowWidget:SetHeading(headings[index])
+local function BuildRowFunc(widget, headings, value, _, xIndex, _, xOfs, yOfs, height)
+    local rowWidget = AceGUI:Create(headings[xIndex].widget or "7LC_TableLabel")
+    rowWidget:SetHeading(headings[xIndex])
     rowWidget:SetHeight(height)
     rowWidget:SetValue(value)
     rowWidget:SetOffset(xOfs, yOfs)
     widget:AddChild(rowWidget)
+end
+
+local function UpdateRowFunc(widget, headings, value, rowSize, xIndex, yIndex, xOfs, yOfs, height)
+    local index = (rowSize * (yIndex - 1)) + xIndex
+    if #widget.children < index then
+        return
+    end
+    local rowWidget = widget.children[index]
+    if rowWidget then
+        rowWidget:SetHeading(headings[xIndex])
+        rowWidget:SetHeight(height)
+        rowWidget:SetValue(value)
+        rowWidget:SetOffset(xOfs, yOfs)
+    end
 end
 
 function TableBuilder:BuildRow(widget, headings, func, data, yIndex)
@@ -174,13 +207,17 @@ function TableBuilder:BuildRow(widget, headings, func, data, yIndex)
         end
 
         if func then
-            func(w, h, i, v, xOfs, yOfs, self.rowHeight)
+            func(w, h, v, #data, i, yIndex, xOfs, yOfs, self.rowHeight)
         end
     end
 end
 
 function TableBuilder:BuildRows(widget, headings, data)
     local func = BuildRowFunc
+    if widget.children and #widget.children > 0 then
+        func = UpdateRowFunc
+    end
+
     local height = 0
     for i,v in ipairs(data) do
         self:BuildRow(widget, headings, func, v, i)
@@ -191,22 +228,6 @@ function TableBuilder:BuildRows(widget, headings, data)
 end
 
 local function Button_OnClick(frame)
-    local descDefault = function(a, b)
-        return a > b
-    end
-
-    local descStringDefault = function(a, b)
-        return a:upper() > b:upper()
-    end
-
-    local ascDefault = function(a, b)
-        return a < b
-    end
-
-    local ascStringDefault = function(a, b)
-        return a:upper() < b:upper()
-    end
-
     AceGUI:ClearFocus()
     PlaySound(852)
     local widget = frame.parent.obj
@@ -259,19 +280,11 @@ local function Button_OnClick(frame)
         newData = widget.unsortedData
     end
 
+    TableBuilder:ResetArrows(frame.parent)
+    TableBuilder:SetArrowTexture(frame.arrow, frame, arrowIndex)
     widget.arrowIndices[frame.index] = arrowIndex
-
-    TableBuilder:ClearHeadings(widget.frame)
-
+    widget:SetRows(newData)
     widget:Fire("OnClick", frame.slug)
-end
-
-local function Control_OnEnter(frame)
-    frame.parent.obj:Fire("OnEnter", frame.slug)
-end
-
-local function Control_OnLeave(frame)
-    frame.parent.obj:Fire("OnLeave", frame.slug)
 end
 
 local function CreateMainFrame(name, parent)
@@ -288,8 +301,6 @@ local methods = {
     ["OnAcquire"] = function(self)
         self:SetDisabled(false)
         TableBuilder.headingOnClick = Button_OnClick
-        TableBuilder.headingOnEnter = Control_OnEnter
-        TableBuilder.headingOnLeave = Control_OnLeave
     end,
     ["OnRelease"] = function(self)
         TableBuilder:ClearHeadings(self.frame)
@@ -309,14 +320,9 @@ local methods = {
         self.headingHeight = value.headingHeight or self.rowHeight
         TableBuilder.headingHeight = self.headingHeight
 
-        self:PauseLayout()
         self:SetHeadings(value.headings)
-        self.data = value.data
         self.unsortedData = value.data
-        local rowsHeight = TableBuilder:BuildRows(self, self.headings, value.data)
-        self:SetHeight(self:GetHeight() + pp(rowsHeight))
-        self:ResumeLayout()
-        self:DoLayout()
+        self:SetRows(value.data)
     end,
     ["SetHeadings"] = function(self, headings)
         self.headings = headings
@@ -331,6 +337,14 @@ local methods = {
 
         self:SetWidth(pp(headingWidth))
         self:SetHeight(pp(headingHeight))
+    end,
+    ["SetRows"] = function(self, data)
+        self:PauseLayout()
+        self.data = data
+        local rowsHeight = TableBuilder:BuildRows(self, self.headings, data)
+        self:SetHeight(self:GetHeight() + pp(rowsHeight))
+        self:ResumeLayout()
+        self:DoLayout()
     end,
     ["DoLayout"] = function(self)
         if not self.children then

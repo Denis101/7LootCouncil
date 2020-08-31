@@ -22,17 +22,17 @@ Addon.Libs.AceConfigDialog:SetDefaultSize(Addon.AddonName .. "DebugWindow", Addo
 -------------------------------------------------------------------------------]]
 
 local testData = {
-    { "Egg", "Priest", "I'm an itiot" },
-    { "Erik", "Warlock", "Rat king prio" },
-    { "Freedom", "Warrior", "Don't worry about it :)" },
-    { "Nayuta", "Rogue", "uwu" },
-    { "Kyr", "Warrior", "Give me golden coins" },
-    { "Mattpriest", "Priest", "hide, hide, hide, hide" },
-    { "Sarcis", "Rogue", "Fucking yellows" },
-    { "Mewn", "Druid", "afk /follow" },
-    { "Wongo", "Mage", "come to my bongo bazaar" },
-    { "Quissy", "Paladin", "guide writer prio" },
-    { "Blodreina", "Paladin", "off-brand frosty" },
+    { "Egg", "PRIEST", "I'm an itiot" },
+    { "Erik", "WARLOCK", "Rat king prio" },
+    { "Freedom", "WARRIOR", "Don't worry about it :)" },
+    { "Nayuta", "ROGUE", "uwu" },
+    { "Kyr", "WARRIOR", "Give me golden coins" },
+    { "Mattpriest", "PRIEST", "hide, hide, hide, hide" },
+    { "Sarcis", "ROGUE", "Fucking yellows" },
+    { "Mewn", "DRUID", "afk /follow" },
+    { "Wongo", "MAGE", "come to my bongo bazaar" },
+    { "Quissy", "PALADIN", "guide writer prio" },
+    { "Blodreina", "PALADIN", "off-brand frosty" },
 }
 
 local defaultTableFrame = {
@@ -175,14 +175,87 @@ Addon.DebugWindowOptions.args = {
                     },
                 }
             },
-            class = {
+            classGroup = {
                 order = 1,
-                type = "input",
+                type = "group",
                 name = "TableClass",
                 width = "full",
-                dialogControl = "7LC_TableClass",
-                get = function() end,
-            }
+                inline = true,
+                args = {
+                    druid = {
+                        order = 0,
+                        type = "input",
+                        name = "7LC_TableClass_Druid",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "DRUID" end,
+                    },
+                    hunter = {
+                        order = 1,
+                        type = "input",
+                        name = "7LC_TableClass_Hunter",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "HUNTER" end,
+                    },
+                    mage = {
+                        order = 2,
+                        type = "input",
+                        name = "7LC_TableClass_Mage",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "MAGE" end,
+                    },
+                    paladin = {
+                        order = 3,
+                        type = "input",
+                        name = "7LC_TableClass_Paladin",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "PALADIN" end,
+                    },
+                    priest = {
+                        order = 4,
+                        type = "input",
+                        name = "7LC_TableClass_Priest",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "PRIEST" end,
+                    },
+                    rogue = {
+                        order = 5,
+                        type = "input",
+                        name = "7LC_TableClass_Rogue",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "ROGUE" end,
+                    },
+                    shaman = {
+                        order = 6,
+                        type = "input",
+                        name = "7LC_TableClass_Shaman",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "SHAMAN" end,
+                    },
+                    warlock = {
+                        order = 7,
+                        type = "input",
+                        name = "7LC_TableClass_Warlock",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "WARLOCK" end,
+                    },
+                    warrior = {
+                        order = 8,
+                        type = "input",
+                        name = "7LC_TableClass_Warrior",
+                        width = "full",
+                        dialogControl = "7LC_TableClass",
+                        get = function() return "WARRIOR" end,
+                    },
+                },
+            },
         }
     }
 }

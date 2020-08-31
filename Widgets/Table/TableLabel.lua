@@ -27,6 +27,7 @@ local LSM = Addon.Libs.LSM
 -------------------------------------------------------------------------------]]
 
 local DEFAULT_WIDTH = 200
+local DEFAULT_HEIGHT = 40
 
 local DEFAULT_ALPHA = .2
 local DEFAULT_HIGHLIGHT_ALPHA = .3
@@ -114,6 +115,7 @@ local methods = {
         self.normalColor = DEFAULT_NORMAL_COLOR
         self.highlightColor = DEFAULT_HIGHLIGHT_COLOR
         self:SetDisabled(false)
+        self:SetHeight(DEFAULT_HEIGHT)
 
         if self:GetValue() then
             self:DoLayout()
@@ -180,7 +182,7 @@ local methods = {
 
 local function Constructor()
     local widget = {
-        frame = CreateMainFrame(widgetType, Addon.UIParent),
+        frame = CreateMainFrame(widgetType),
         type = widgetType,
     }
 
