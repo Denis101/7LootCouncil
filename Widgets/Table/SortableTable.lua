@@ -28,7 +28,8 @@ local pp = Addon.utils.display.pixel_perfect
     Constants
 -------------------------------------------------------------------------------]]
 
-local ROW_HEIGHT = 20
+local DEFAULT_ROW_WIDTH = 200
+local DEFAULT_ROW_HEIGHT = 20
 
 --[[-----------------------------------------------------------------------------
     Properties
@@ -56,11 +57,6 @@ local TableBuilder = {
 function TableBuilder:ClearHeadings(frame)
     Addon.utils.display.clear_frame_table(frame.headings)
     frame.headings = {}
-end
-
-function TableBuilder:ClearFrame(widget)
-    self:ClearHeadings(widget.frame)
-    widget:ReleaseChildren()
 end
 
 function TableBuilder:BuildArrow(parent)
@@ -99,7 +95,7 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
 
     btn:SetPoint("TOPLEFT", parent, "TOPLEFT", pp(offset), 0)
     btn:SetWidth(pp(size))
-    btn:SetHeight(pp(ROW_HEIGHT))
+    btn:SetHeight(pp(self.headingHeight))
 
     local texture = LSM:Fetch("background", "Solid")
     btn:SetNormalTexture(texture)
@@ -127,6 +123,13 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     return btn
 end
 
+function TableBuilder:UpdateHeading(btn, heading, parent, size, offset)
+    btn:SetPoint("TOPLEFT", parent, "TOPLEFT", pp(offset), 0)
+    btn:SetWidth(pp(size))
+    btn:SetHeight(pp(self.headingHeight))
+    btn.text:SetText(heading.displayText)
+end
+
 function TableBuilder:BuildHeadings(frame, headings)
     if not frame.headings then
         frame.headings = {}
@@ -136,39 +139,52 @@ function TableBuilder:BuildHeadings(frame, headings)
     local offset = 0
     for i,v in ipairs(headings) do
         if i > 1 then
-            offset = offset + (headings[i - 1].width or 200)
+            offset = offset + (headings[i - 1].width or DEFAULT_ROW_WIDTH)
         end
 
-        table.insert(frame.headings, self:BuildHeading(i, v, frame, v.width or 200, offset))
-        -- TODO, make height configurable
-        height = height + 20
+        if not frame.headings[i] then
+            table.insert(frame.headings, self:BuildHeading(i, v, frame, v.width or DEFAULT_ROW_WIDTH, offset))
+        else
+            self:UpdateHeading(frame.headings[i], v, frame, v.width or DEFAULT_ROW_WIDTH, offset)
+        end
+
+        height = height + self.headingHeight
     end
 
-    return offset + (headings[#headings].width or 200), height
+    return offset + (headings[#headings].width or DEFAULT_ROW_WIDTH), height
 end
 
-function TableBuilder:BuildRow(data, yIndex, headings, parent)
-    local xOffset = 0
+local function BuildRowFunc(widget, headings, index, value, xOfs, yOfs, height)
+    local rowWidget = AceGUI:Create(headings[index].widget or "7LC_TableLabel")
+    rowWidget:SetHeading(headings[index])
+    rowWidget:SetHeight(height)
+    rowWidget:SetValue(value)
+    rowWidget:SetOffset(xOfs, yOfs)
+    widget:AddChild(rowWidget)
+end
+
+function TableBuilder:BuildRow(widget, headings, func, data, yIndex)
+    local xOfs = 0
+    local yOfs = -((yIndex - 1) * self.rowHeight)
+    local w = widget
+    local h = headings
     for i,v in ipairs(data) do
         if i > 1 then
-            xOffset = xOffset + (headings[i - 1].width or 200)
+            xOfs = xOfs + (h[i - 1].width or DEFAULT_ROW_WIDTH)
         end
 
-        local rowWidget = AceGUI:Create(headings[i].widget or "7LC_TableLabel")
-        rowWidget:SetHeading(headings[i])
-        rowWidget:SetValue(v)
-        -- TODO, make height configurable
-        rowWidget:SetOffset(xOffset, -((yIndex - 1) * ROW_HEIGHT))
-        parent:AddChild(rowWidget)
+        if func then
+            func(w, h, i, v, xOfs, yOfs, self.rowHeight)
+        end
     end
 end
 
 function TableBuilder:BuildRows(widget, headings, data)
+    local func = BuildRowFunc
     local height = 0
     for i,v in ipairs(data) do
-        self:BuildRow(v, i, headings, widget)
-        -- TODO, make height configurable
-        height = height + ROW_HEIGHT
+        self:BuildRow(widget, headings, func, v, i)
+        height = height + self.rowHeight
     end
 
     return height
@@ -222,6 +238,10 @@ local function Button_OnClick(frame)
                     asc = ascStringDefault
                 end
             else
+                if not desc then
+                    desc = descDefault
+                end
+
                 if not asc then
                     asc = ascDefault
                 end
@@ -272,7 +292,7 @@ local methods = {
         TableBuilder.headingOnLeave = Control_OnLeave
     end,
     ["OnRelease"] = function(self)
-        TableBuilder:ClearFrame(self)
+        TableBuilder:ClearHeadings(self.frame)
     end,
     ["SetDisabled"] = function(self, disabled)
         self.disabled = disabled
@@ -282,12 +302,12 @@ local methods = {
         self:SetList(data)
     end,
     ["SetList"] = function(self, value)
-        local sameHeadings = Addon.utils.table.compare(self.headings, value.headings)
-        local sameData = Addon.utils.table.compare(self.unsortedData, value.data)
-        if sameHeadings and sameData then
-            self:DoLayout()
-            return
-        end
+        self.rowHeight = value.rowHeight or DEFAULT_ROW_HEIGHT
+        TableBuilder.rowHeight = self.rowHeight
+        self.content:SetPoint("TOPLEFT", 0, -self.rowHeight)
+
+        self.headingHeight = value.headingHeight or self.rowHeight
+        TableBuilder.headingHeight = self.headingHeight
 
         self:PauseLayout()
         self:SetHeadings(value.headings)
@@ -299,10 +319,6 @@ local methods = {
         self:DoLayout()
     end,
     ["SetHeadings"] = function(self, headings)
-        if self.headings and (#headings ~= #self.headings) then
-            TableBuilder:ClearFrame(self)
-        end
-
         self.headings = headings
         self.arrowIndices = {}
         for _ = 1, #headings do
@@ -342,7 +358,7 @@ local methods = {
     ["OnHeightSet"] = function(self)
         if self.content then
             -- TODO, make heading height configurable
-            self.content:SetHeight(self.frame.height - pp(20))
+            self.content:SetHeight(self.frame.height - pp(self.headingHeight))
         end
     end,
     ["SetValue"] = function() --[[Stub for "input" types]] end,
@@ -362,7 +378,7 @@ local function Constructor()
     frame:Hide()
 
     local content = CreateFrame("Frame", nil, frame)
-    content:SetPoint("TOPLEFT", 0, -ROW_HEIGHT)
+    content:SetPoint("TOPLEFT", 0, -DEFAULT_ROW_HEIGHT)
 
     local widget = {
         frame = frame,

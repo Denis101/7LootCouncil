@@ -21,7 +21,7 @@ local function __clear_frame(frame)
 
     -- some hacky shit involved here, where we ignore AceGUI hierarchy
     -- so manually add children to frames and then clean them up here
-    -- That's #YOLO WoW GUI development for ou
+    -- That's #YOLO WoW GUI development for you
     if frame.children == nil then
         return
     end

@@ -44,21 +44,9 @@ local defaultTableFrame = {
     values = function()
         return {
             headings = {
-                {
-                    slug = "name", displayText = "Name",
-                    desc = function(a,b) return a:upper() > b:upper() end,
-                    asc = function(a,b) return a:upper() < b:upper() end,
-                },
-                {
-                    slug = "class", displayText = "Class",
-                    desc = function(a,b) return a:upper() > b:upper() end,
-                    asc = function(a,b) return a:upper() < b:upper() end,
-                },
-                {
-                    slug = "note", displayText = "Note",
-                    desc = function(a,b) return a:upper() > b:upper() end,
-                    asc = function(a,b) return a:upper() < b:upper() end,
-                }
+                { slug = "name", displayText = "Name" },
+                { slug = "class", displayText = "Class" },
+                { slug = "note", displayText = "Note" },
             },
             data = testData,
         }

@@ -9,6 +9,13 @@ local function clamp(n, mi, ma)
     return n
 end
 
+-- n = 100
+-- mult = 1.1
+-- a = (n >= 0 and 1 or -1) * 0.5 = 0.5
+-- b = (n / mult) = 90.909090..
+-- c = a + b = ~91.4
+-- d = floor(c) = 91
+-- result = d * mult = 100.1
 local function num_round(n, mult)
     if not n then return end
     mult = mult or 1

@@ -26,8 +26,7 @@ local LSM = Addon.Libs.LSM
     Constants
 -------------------------------------------------------------------------------]]
 
-local LABEL_WIDTH = 200
-local LABEL_HEIGHT = 40
+local DEFAULT_WIDTH = 200
 
 local DEFAULT_ALPHA = .2
 local DEFAULT_HIGHLIGHT_ALPHA = .3
@@ -48,10 +47,28 @@ local widgetVersion = 1
     Private
 -------------------------------------------------------------------------------]]
 
+local function CreateText(frame)
+    frame.children = {}
+    local txt = frame:CreateFontString(frame, "OVERLAY", "GameTooltipText")
+    txt:SetPoint("LEFT", pp(5), 0)
+    txt:SetFont(
+        Addon.profile.general.fontSettings.font,
+        Addon.profile.general.fontSettings.size,
+        Addon.profile.general.fontSettings.outline)
+    txt:SetDrawLayer("OVERLAY")
+
+    frame.text = txt
+    table.insert(frame.children, txt)
+end
+
 local function SetFrameData(self)
     self.frame.slug = self.heading and self.heading.slug
     self.frame.data = self.value
-    self.frame.text:SetText(self.value)
+
+    if self:GetValue() then
+        self.frame.text:SetText(self.value)
+    end
+
     self.frame:Show()
 end
 
@@ -80,29 +97,9 @@ local function SetFrameTexture(frame, textureName, normalColor, highlightColor, 
     end
 end
 
-local function CreateMainFrame(name, parent, x, y, width, height)
-    local xPos = x or 0
-    local yPos = y or 0
-    local frameWidth = width or LABEL_WIDTH
-    local frameHeight = height or LABEL_HEIGHT
-
+local function CreateMainFrame(name)
     local frame = CreateFrame("Button", name)
-    frame.children = {}
-
-    frame:SetFrameStrata(parent:GetFrameStrata())
-    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", pp(xPos), pp(yPos))
-    frame:SetWidth(pp(frameWidth))
-    frame:SetHeight(pp(frameHeight))
-
-    local txt = frame:CreateFontString(frame, "OVERLAY", "GameTooltipText")
-    txt:SetFont(
-        Addon.profile.general.fontSettings.font,
-        Addon.profile.general.fontSettings.size,
-        Addon.profile.general.fontSettings.outline)
-    txt:SetDrawLayer("OVERLAY")
-    txt:SetPoint("LEFT", pp(5), 0)
-    frame.text = txt
-    table.insert(frame.children, txt)
+    CreateText(frame)
     frame:Hide()
     return frame
 end
@@ -117,9 +114,12 @@ local methods = {
         self.normalColor = DEFAULT_NORMAL_COLOR
         self.highlightColor = DEFAULT_HIGHLIGHT_COLOR
         self:SetDisabled(false)
-    end,
-    ["OnRelease"] = function(self)
-        Addon.utils.display.clear_frame(self.frame)
+
+        if self:GetValue() then
+            self:DoLayout()
+            SetFrameTexture(self.frame, self.texture, self.normalColor, self.highlightColor, false)
+            SetFrameData(self)
+        end
     end,
     ["SetDisabled"] = function(self, disabled)
         self.disabled = disabled
@@ -139,8 +139,7 @@ local methods = {
     end,
     ["SetHeading"] = function(self, heading)
         self.heading = heading
-        self:SetWidth(pp(heading.width or 100))
-        self:SetHeight(pp(heading.height or 20))
+        self:SetWidth(pp(heading.width or DEFAULT_WIDTH))
         SetFrameData(self)
     end,
     ["GetSlug"] = function(self)
