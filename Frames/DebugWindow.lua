@@ -20,6 +20,49 @@ Addon.Libs.AceConfigDialog:SetDefaultSize(Addon.AddonName .. "DebugWindow", Addo
 --[[-----------------------------------------------------------------------------
     Properties
 -------------------------------------------------------------------------------]]
+
+local sortableTableFrame = {
+    order = 0,
+    type = "select",
+    name = "SortableTable",
+    width = "relative",
+    dialogControl = "7LC_SortableTable",
+    values = function()
+        return {
+            headings = {
+                {
+                    slug = "name", displayText = "Name", widget = "7LC_TableLabel", width = 100,
+                    desc = function(a,b) return a:upper() > b:upper() end,
+                    asc = function(a,b) return a:upper() < b:upper() end,
+                },
+                {
+                    slug = "class", displayText = "Class", widget = "7LC_TableClass", width = 100,
+                    desc = function(a,b) return a:upper() > b:upper() end,
+                    asc = function(a,b) return a:upper() < b:upper() end,
+                },
+                {
+                    slug = "note", displayText = "Note", widget = "7LC_TableLabel", width = 300,
+                    desc = function(a,b) return a:upper() > b:upper() end,
+                    asc = function(a,b) return a:upper() < b:upper() end,
+                }
+            },
+            data = {
+                { "Egg", "Priest", "I'm an itiot" },
+                { "Erik", "Warlock", "Rat king prio" },
+                { "Freedom", "Warrior", "Don't worry about it :)" },
+                { "Nayuta", "Rogue", "uwu" },
+                { "Kyr", "Warrior", "Give me golden coins" },
+                { "Mattpriest", "Priest", "hide, hide, hide, hide" },
+                { "Sarcis", "Rogue", "Fucking yellows" },
+                { "Mewn", "Druid", "afk /follow" },
+                { "Wongo", "Mage", "come to my bongo bazaar" },
+                { "Quissy", "Paladin", "guide writer prio" },
+                { "Blodreina", "Paladin", "off-brand frosty" },
+            },
+        }
+    end,
+}
+
 Addon.DebugWindowOptions.args = {
     PaginatedList = {
         order = 0,
@@ -67,50 +110,18 @@ Addon.DebugWindowOptions.args = {
         order = 1,
         type = "group",
         name = "Sortable Table",
-        childGroups = "tab",
+        childGroups = "tree",
         args = {
-            table = {
+            tableContainer = {
                 order = 0,
-                type = "select",
-                name = "Table",
-                width = "full",
-                dialogControl = "7LC_SortableTable",
-                values = function()
-                    return {
-                        headings = {
-                            {
-                                slug = "name", displayText = "Name", widget = "7LC_TableLabel", width = 100,
-                                desc = function(a,b) return a:upper() > b:upper() end,
-                                asc = function(a,b) return a:upper() < b:upper() end,
-                            },
-                            {
-                                slug = "class", displayText = "Class", widget = "7LC_TableClass", width = 100,
-                                desc = function(a,b) return a:upper() > b:upper() end,
-                                asc = function(a,b) return a:upper() < b:upper() end,
-                            },
-                            {
-                                slug = "note", displayText = "Note", widget = "7LC_TableLabel", width = 300,
-                                desc = function(a,b) return a:upper() > b:upper() end,
-                                asc = function(a,b) return a:upper() < b:upper() end,
-                            }
-                        },
-                        data = {
-                            { "Egg", "Priest", "I'm an itiot" },
-                            { "Erik", "Warlock", "Rat king prio" },
-                            { "Freedom", "Warrior", "Don't worry about it :)" },
-                            { "Nayuta", "Rogue", "uwu" },
-                            { "Kyr", "Warrior", "Give me golden coins" },
-                            { "Mattpriest", "Priest", "hide, hide, hide, hide" },
-                            { "Sarcis", "Rogue", "Fucking yellows" },
-                            { "Mewn", "Druid", "afk /follow" },
-                            { "Wongo", "Mage", "come to my bongo bazaar" },
-                            { "Quissy", "Paladin", "guide writer prio" },
-                            { "Blodreina", "Paladin", "off-brand frosty" },
-                        },
-                    }
-                end,
+                type = "group",
+                name = "Base Table with data",
+                inline = true,
+                args = {
+                    table = sortableTableFrame,
+                }
             },
-        }
+        },
     },
     TableWidgets = {
         order = 2,

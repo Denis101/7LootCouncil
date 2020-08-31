@@ -8,7 +8,7 @@ local function pixel_perfect(value)
     return _G.__utils__.math.num_round(value, pixel_scale())
 end
 
-local function clear_frame(frame)
+local function __clear_frame(frame)
     if frame == nil then
         return
     end
@@ -17,13 +17,31 @@ local function clear_frame(frame)
     frame:SetSize(0, 0)
     frame:Hide()
 
-    if frame.text == nil then
+    -- some hacky shit involved here, where we ignore AceGUI hierarchy
+    -- so manually add children to frames and then clean them up here
+    -- That's #YOLO WoW GUI development for ou
+    if frame.children == nil then
         return
     end
 
-    frame.text:ClearAllPoints()
-    frame.text:SetSize(0, 0)
-    frame.text:Hide()
+    for _,child in ipairs(frame.children) do
+        child:ClearAllPoints()
+        child:SetSize(0, 0)
+        child:Hide()
+    end
+end
+
+local function clear_frame(frame)
+    if frame == nil then
+        return
+    end
+
+    -- This seems dumb, but they're AceGUI widgets and i cba :)
+    if frame.frame ~= nil then
+        __clear_frame(frame.frame)
+    else
+        __clear_frame(frame)
+    end
 end
 
 local function clear_frame_table(frames)

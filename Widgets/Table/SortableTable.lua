@@ -53,6 +53,16 @@ local TableBuilder = {
     Private
 -------------------------------------------------------------------------------]]
 
+function TableBuilder:ClearHeadings(frame)
+    Addon.utils.display.clear_frame_table(frame.headings)
+    frame.headings = {}
+end
+
+function TableBuilder:ClearFrame(widget)
+    self:ClearHeadings(widget.frame)
+    widget:ReleaseChildren()
+end
+
 function TableBuilder:BuildArrow(parent)
     local arrow = CreateFrame("Button", nil, parent)
     arrow:SetHitRectInsets(0, 0, -10, 0)
@@ -81,13 +91,14 @@ end
 
 function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     local btn = CreateFrame("Button", widgetType .. "Heading" .. heading.slug, parent)
+    btn.children = {}
     btn.obj = parent.obj
     btn.parent = parent
     btn.slug = heading.slug
     btn.index = index
 
-    btn:Point("TOPLEFT", parent, "TOPLEFT", pp(offset - 1), 0)
-    btn:SetWidth(pp(size - 1))
+    btn:Point("TOPLEFT", parent, "TOPLEFT", pp(offset + 1), 0)
+    btn:SetWidth(pp(size))
     btn:SetHeight(pp(ROW_HEIGHT))
 
     local texture = LSM:Fetch("background", "Solid")
@@ -100,6 +111,7 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     txt:SetDrawLayer("OVERLAY")
     txt:Point("CENTER", 0, 0)
     btn.text = txt
+    table.insert(btn.children, txt)
     btn:Show()
 
     if not self.disabled then
@@ -115,78 +127,54 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     return btn
 end
 
-function TableBuilder:BuildRow(data, index, headings, parent)
-    local row = {}
-
-    local offset = 0
-    for i,v in ipairs(data) do
-        if i == 1 then
-            offset = 0
-        else
-            offset = offset + (headings[i - 1].width or 100)
-        end
-
-        -- local widget = AceGUI:Create(headings[i].widget or "7LC_TableLabel")
-        -- widget:InsertInto(parent)
-
-        local btn = CreateFrame("Button", widgetType .. "Row" .. index .. "-" .. i, parent)
-        btn:Point("TOPLEFT", parent, "TOPLEFT", pp(offset - 1), pp(-(index * ROW_HEIGHT + 1)))
-        btn:SetWidth(pp(headings[i].width - 1))
-        btn:SetHeight(pp(ROW_HEIGHT))
-
-        btn.parent = parent
-        btn.slug = headings[i].slug
-        btn.data = v
-
-        local texture = LSM:Fetch("background", "Solid")
-        btn:SetNormalTexture(texture)
-        btn:GetNormalTexture():SetColorTexture(.2, .2, .2, .2)
-        btn:SetHighlightTexture(texture)
-	    btn:GetHighlightTexture():SetColorTexture(.3, .3, .3, .3)
-
-        local txt = btn:CreateFontString(btn, "OVERLAY", "GameTooltipText")
-        txt:SetFont(Addon.profile.general.fontSettings.font, Addon.profile.general.fontSettings.size, Addon.profile.general.fontSettings.outline)
-        txt:SetText(v)
-        txt:SetDrawLayer("OVERLAY")
-        txt:Point("LEFT", pp(5), 0)
-        btn.text = txt
-        table.insert(row, btn)
+function TableBuilder:BuildHeadings(frame, headings)
+    if not frame.headings then
+        frame.headings = {}
     end
 
-    return row
-end
-
-function TableBuilder:Build(frame, headings, data)
-    Addon.utils.display.clear_frame_table(frame.headings)
-
-    if frame.rows then
-        for _,v in ipairs(frame.rows) do
-            Addon.utils.display.clear_frame_table(v)
-        end
-    end
-
-    frame.headings = {}
-    frame.rows = {}
-
+    local height = 0
     local offset = 0
     for i,v in ipairs(headings) do
-        if i == 1 then
-            offset = 0
-        else
+        if i > 1 then
             offset = offset + (headings[i - 1].width or 100)
         end
+
         table.insert(frame.headings, self:BuildHeading(i, v, frame, v.width or 100, offset))
+        -- TODO, make height configurable
+        height = height + 20
     end
 
-    for i,v in ipairs(data) do
-        table.insert(frame.rows, self:BuildRow(v, i, headings, frame))
-    end
-
-    frame:SetHeight(pp(ROW_HEIGHT + (#frame.rows * ROW_HEIGHT)))
-    frame:Show()
+    return offset + (headings[#headings].width or 100), height
 end
 
-local function Button_OnClick(frame, ...)
+function TableBuilder:BuildRow(data, yIndex, headings, parent)
+    local xOffset = 0
+    for i,v in ipairs(data) do
+        if i > 1 then
+            xOffset = xOffset + (headings[i - 1].width or 100)
+        end
+
+        local rowWidget = AceGUI:Create(headings[i].widget or "7LC_TableLabel")
+        rowWidget:SetHeading(headings[i])
+        rowWidget:SetValue(v)
+        -- TODO, make height configurable
+        rowWidget:SetOffset(xOffset, -((yIndex - 1) * ROW_HEIGHT))
+        parent:AddChild(rowWidget)
+    end
+end
+
+function TableBuilder:BuildRows(widget, headings, data)
+    local height = 0
+    for i,v in ipairs(data) do
+        self:BuildRow(v, i, headings, widget)
+        -- TODO, make height configurable
+        height = height + ROW_HEIGHT
+    end
+
+    return height
+end
+
+local function Button_OnClick(frame)
     AceGUI:ClearFocus()
     PlaySound(852)
     local widget = frame.parent.obj
@@ -217,7 +205,9 @@ local function Button_OnClick(frame, ...)
     end
 
     widget.arrowIndices[frame.index] = arrowIndex
-    TableBuilder:Build(widget.frame, widget.headings, newData)
+
+    TableBuilder:ClearHeadings(widget.frame)
+
     widget:Fire("OnClick", frame.slug)
 end
 
@@ -242,32 +232,89 @@ end
 local methods = {
     ["OnAcquire"] = function(self)
         self:SetDisabled(false)
-        TableBuilder.disabled = false
         TableBuilder.headingOnClick = Button_OnClick
         TableBuilder.headingOnEnter = Control_OnEnter
         TableBuilder.headingOnLeave = Control_OnLeave
+    end,
+    ["OnRelease"] = function(self)
+        TableBuilder:ClearFrame(self)
     end,
     ["SetDisabled"] = function(self, disabled)
         self.disabled = disabled
         TableBuilder.disabled = disabled
     end,
+    ["SetData"] = function(self, data)
+        self:SetList(data)
+    end,
     ["SetList"] = function(self, value)
-        self.headings = value.headings
+        print("SetList")
+        local sameHeadings = Addon.utils.table.compare(self.headings, value.headings)
+        local sameData = Addon.utils.table.compare(self.unsortedData, value.data)
+        if sameHeadings and sameData then
+            return
+        end
+
+        self:PauseLayout()
+        self:SetHeadings(value.headings)
         self.data = value.data
         self.unsortedData = value.data
+        local rowsHeight = TableBuilder:BuildRows(self, self.headings, value.data)
+        self:SetHeight(self:GetHeight() + pp(rowsHeight))
+        self:ResumeLayout()
+        self:PerformLayout()
+    end,
+    ["SetHeadings"] = function(self, headings)
+        if self.headings and (#headings ~= #self.headings) then
+            TableBuilder:ClearFrame(self)
+        end
 
+        self.headings = headings
         self.arrowIndices = {}
-        for _ in ipairs(value.headings) do
+        for _ = 1, #headings do
             table.insert(self.arrowIndices, 1)
         end
 
-        TableBuilder:Build(self.frame, value.headings, value.data)
+        self.data = nil
+        self.unsortedData = nil
+        local headingWidth, headingHeight = TableBuilder:BuildHeadings(self.frame, self.headings)
+
+        self:SetWidth(pp(headingWidth))
+        self:SetHeight(pp(headingHeight))
+    end,
+    ["DoLayout"] = function(self)
+        if not self.children then
+            return
+        end
+
+        for i = 1, #self.children do
+            local child = self.children[i]
+            if child.DoLayout then
+                child:DoLayout()
+            end
+        end
+    end,
+    ["GetWidth"] = function(self)
+        return self.frame.width
+    end,
+    ["GetHeight"] = function(self)
+        return self.frame.height
+    end,
+    ["OnWidthSet"] = function(self)
+        if self.content then
+            self.content:SetWidth(self.frame.width)
+        end
+    end,
+    ["OnHeightSet"] = function(self)
+        if self.content then
+            -- TODO, make heading height configurable
+            self.content:SetHeight(self.frame.height - pp(20))
+        end
     end,
     ["SetValue"] = function() --[[Stub for "input" types]] end,
     ["GetValue"] = function() --[[Stub for "input" types]] end,
     ["SetItemValue"] = function() --[[Stub for "select" types]] end,
     ["SetText"] = function() --[[Stub for "input" types]] end,
-    ["SetLabel"] = function(l) --[[Stub for "input" types]] end,
+    ["SetLabel"] = function() --[[Stub for "input" types]] end,
     ["OnEnterPressed"] = function() --[[Stub for "input" types]] end,
 }
 
@@ -276,8 +323,15 @@ local methods = {
 -------------------------------------------------------------------------------]]
 
 local function Constructor()
+    local frame = CreateMainFrame(widgetType, Addon.UIParent)
+    frame:Hide()
+
+    local content = CreateFrame("Frame", nil, frame)
+    content:SetPoint("TOPLEFT", 0, -ROW_HEIGHT)
+
     local widget = {
-        frame = CreateMainFrame(widgetType, Addon.UIParent),
+        frame = frame,
+        content = content,
         type = widgetType,
     }
 
@@ -285,7 +339,7 @@ local function Constructor()
         widget[method] = func
     end
 
-    return AceGUI:RegisterAsWidget(widget)
+    return AceGUI:RegisterAsContainer(widget)
 end
 
 AceGUI:RegisterWidgetType(widgetType, Constructor, widgetVersion)

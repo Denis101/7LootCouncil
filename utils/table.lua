@@ -25,7 +25,7 @@ end
 local function print_table(t)
     local printTable_cache = {}
     local function sub_print_table(t, indent)
-        if printTable_cache[tostring(t)]then
+        if printTable_cache[tostring(t)] then
             print(indent .. "*" .. tostring(t))
         else
             printTable_cache[tostring(t)] = true
@@ -49,7 +49,7 @@ local function print_table(t)
 
     if ( type(t) == "table" ) then
         print(tostring(t) .. " {")
-        sub_print_table(t, "  " )
+        sub_print_table(t, "  ")
         print("}")
     else
         sub_print_table(t, "  ")
