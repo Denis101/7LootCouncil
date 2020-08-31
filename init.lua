@@ -34,9 +34,9 @@ do
 	Addon:AddLib("AceDBO", "AceDBOptions-3.0")
 	Addon:AddLib("LSM", "LibSharedMedia-3.0")
 	Addon:AddLib("RC", "LibRangeCheck-2.0")
-	Addon:AddLib("AceGUI", "AceGUI-3.0-7LC")
+	Addon:AddLib("AceGUI", "AceGUI-3.0")
 	Addon:AddLib("AceConfig", "AceConfig-3.0")
-	Addon:AddLib("AceConfigDialog", "AceConfigDialog-3.0-7LC")
+	Addon:AddLib("AceConfigDialog", "AceConfigDialog-3.0")
 	Addon:AddLib("AceConfigRegistry", "AceConfigRegistry-3.0")
 	Addon:AddLib("AceHook", "AceHook-3.0")
 end
