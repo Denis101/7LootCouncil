@@ -1,7 +1,9 @@
 local GetPhysicalScreenSize = GetPhysicalScreenSize
+local GetCVar = GetCVar
+
 local function pixel_scale()
     local _, screenHeight = GetPhysicalScreenSize()
-    return (768.0 / screenHeight) / 0.64
+    return (768.0 / screenHeight) / GetCVar("uiScale")
 end
 
 local function pixel_perfect(value)

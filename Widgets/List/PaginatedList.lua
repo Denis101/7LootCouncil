@@ -40,8 +40,11 @@ local widgetVersion = 1
 
 local function CreateMainFrame(name, parent)
     local frame = CreateFrame("Frame", name, parent)
-    frame:Size(100, 100)
-    frame:CreateBackdrop()
+    frame:SetWidth(100)
+    frame:SetHeight(100)
+    if frame.CreateBackdrop then
+        frame:CreateBackdrop()
+    end
     frame:Show()
     return frame
 end

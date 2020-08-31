@@ -90,7 +90,7 @@ local function CreateMainFrame(name)
         Addon.profile.general.fontSettings.size,
         Addon.profile.general.fontSettings.outline)
     txt:SetDrawLayer("OVERLAY")
-    txt:Point("LEFT", pp(5), 0)
+    txt:SetPoint("LEFT", pp(5), 0)
     frame.text = txt
     table.insert(frame.children, txt)
     frame:Hide()
@@ -129,7 +129,7 @@ local methods = {
     end,
     ["SetHeading"] = function(self, heading)
         self.heading = heading
-        self:SetWidth(pp(heading.width or 100))
+        self:SetWidth(pp(heading.width or 200))
         self:SetHeight(pp(heading.height or 20))
         SetFrameData(self)
     end,

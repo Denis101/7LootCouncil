@@ -97,7 +97,7 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     btn.slug = heading.slug
     btn.index = index
 
-    btn:Point("TOPLEFT", parent, "TOPLEFT", pp(offset + 1), 0)
+    btn:SetPoint("TOPLEFT", parent, "TOPLEFT", pp(offset), 0)
     btn:SetWidth(pp(size))
     btn:SetHeight(pp(ROW_HEIGHT))
 
@@ -109,7 +109,7 @@ function TableBuilder:BuildHeading(index, heading, parent, size, offset)
     txt:SetFont(Addon.profile.general.fontSettings.font, Addon.profile.general.fontSettings.size, Addon.profile.general.fontSettings.outline)
     txt:SetText(heading.displayText)
     txt:SetDrawLayer("OVERLAY")
-    txt:Point("CENTER", 0, 0)
+    txt:SetPoint("CENTER", 0, 0)
     btn.text = txt
     table.insert(btn.children, txt)
     btn:Show()
@@ -136,22 +136,22 @@ function TableBuilder:BuildHeadings(frame, headings)
     local offset = 0
     for i,v in ipairs(headings) do
         if i > 1 then
-            offset = offset + (headings[i - 1].width or 100)
+            offset = offset + (headings[i - 1].width or 200)
         end
 
-        table.insert(frame.headings, self:BuildHeading(i, v, frame, v.width or 100, offset))
+        table.insert(frame.headings, self:BuildHeading(i, v, frame, v.width or 200, offset))
         -- TODO, make height configurable
         height = height + 20
     end
 
-    return offset + (headings[#headings].width or 100), height
+    return offset + (headings[#headings].width or 200), height
 end
 
 function TableBuilder:BuildRow(data, yIndex, headings, parent)
     local xOffset = 0
     for i,v in ipairs(data) do
         if i > 1 then
-            xOffset = xOffset + (headings[i - 1].width or 100)
+            xOffset = xOffset + (headings[i - 1].width or 200)
         end
 
         local rowWidget = AceGUI:Create(headings[i].widget or "7LC_TableLabel")
@@ -175,6 +175,22 @@ function TableBuilder:BuildRows(widget, headings, data)
 end
 
 local function Button_OnClick(frame)
+    local descDefault = function(a, b)
+        return a > b
+    end
+
+    local descStringDefault = function(a, b)
+        return a:upper() > b:upper()
+    end
+
+    local ascDefault = function(a, b)
+        return a < b
+    end
+
+    local ascStringDefault = function(a, b)
+        return a:upper() < b:upper()
+    end
+
     AceGUI:ClearFocus()
     PlaySound(852)
     local widget = frame.parent.obj
@@ -190,12 +206,31 @@ local function Button_OnClick(frame)
     local newData = {}
     if arrowIndex > 1 then
         local heading = widget.headings[frame.index]
+
         newData = Addon.utils.table.copy(widget.data)
         table.sort(newData, function(a,b)
+            local isString = type(a) == "string" and type(b) == "string"
+            local desc = heading.desc
+            local asc = heading.asc
+
+            if isString then
+                if not desc then
+                    desc = descStringDefault
+                end
+
+                if not asc then
+                    asc = ascStringDefault
+                end
+            else
+                if not asc then
+                    asc = ascDefault
+                end
+            end
+
             if arrowIndex == 2 then
-                return heading.desc(a[frame.index], b[frame.index])
+                return desc(a[frame.index], b[frame.index])
             elseif arrowIndex == 3 then
-                return heading.asc(a[frame.index], b[frame.index])
+                return asc(a[frame.index], b[frame.index])
             else
                 return true
             end
@@ -247,10 +282,10 @@ local methods = {
         self:SetList(data)
     end,
     ["SetList"] = function(self, value)
-        print("SetList")
         local sameHeadings = Addon.utils.table.compare(self.headings, value.headings)
         local sameData = Addon.utils.table.compare(self.unsortedData, value.data)
         if sameHeadings and sameData then
+            self:DoLayout()
             return
         end
 
@@ -261,7 +296,7 @@ local methods = {
         local rowsHeight = TableBuilder:BuildRows(self, self.headings, value.data)
         self:SetHeight(self:GetHeight() + pp(rowsHeight))
         self:ResumeLayout()
-        self:PerformLayout()
+        self:DoLayout()
     end,
     ["SetHeadings"] = function(self, headings)
         if self.headings and (#headings ~= #self.headings) then

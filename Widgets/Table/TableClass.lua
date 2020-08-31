@@ -90,7 +90,7 @@ local function CreateMainFrame(name, parent, x, y, width, height)
     frame.children = {}
 
     frame:SetFrameStrata(parent:GetFrameStrata())
-    frame:Point("TOPLEFT", parent, "TOPLEFT", pp(xPos), pp(yPos))
+    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", pp(xPos), pp(yPos))
     frame:SetWidth(pp(frameWidth))
     frame:SetHeight(pp(frameHeight))
 
@@ -100,7 +100,7 @@ local function CreateMainFrame(name, parent, x, y, width, height)
         Addon.profile.general.fontSettings.size,
         Addon.profile.general.fontSettings.outline)
     txt:SetDrawLayer("OVERLAY")
-    txt:Point("LEFT", pp(5), 0)
+    txt:SetPoint("LEFT", pp(5), 0)
     frame.text = txt
     table.insert(frame.children, txt)
     frame:Hide()

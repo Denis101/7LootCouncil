@@ -21,7 +21,51 @@ Addon.Libs.AceConfigDialog:SetDefaultSize(Addon.AddonName .. "DebugWindow", Addo
     Properties
 -------------------------------------------------------------------------------]]
 
-local sortableTableFrame = {
+local testData = {
+    { "Egg", "Priest", "I'm an itiot" },
+    { "Erik", "Warlock", "Rat king prio" },
+    { "Freedom", "Warrior", "Don't worry about it :)" },
+    { "Nayuta", "Rogue", "uwu" },
+    { "Kyr", "Warrior", "Give me golden coins" },
+    { "Mattpriest", "Priest", "hide, hide, hide, hide" },
+    { "Sarcis", "Rogue", "Fucking yellows" },
+    { "Mewn", "Druid", "afk /follow" },
+    { "Wongo", "Mage", "come to my bongo bazaar" },
+    { "Quissy", "Paladin", "guide writer prio" },
+    { "Blodreina", "Paladin", "off-brand frosty" },
+}
+
+local defaultTableFrame = {
+    order = 0,
+    type = "select",
+    name = "SortableTable",
+    width = "relative",
+    dialogControl = "7LC_SortableTable",
+    values = function()
+        return {
+            headings = {
+                {
+                    slug = "name", displayText = "Name",
+                    desc = function(a,b) return a:upper() > b:upper() end,
+                    asc = function(a,b) return a:upper() < b:upper() end,
+                },
+                {
+                    slug = "class", displayText = "Class",
+                    desc = function(a,b) return a:upper() > b:upper() end,
+                    asc = function(a,b) return a:upper() < b:upper() end,
+                },
+                {
+                    slug = "note", displayText = "Note",
+                    desc = function(a,b) return a:upper() > b:upper() end,
+                    asc = function(a,b) return a:upper() < b:upper() end,
+                }
+            },
+            data = testData,
+        }
+    end,
+}
+
+local classColorTableFrame = {
     order = 0,
     type = "select",
     name = "SortableTable",
@@ -46,19 +90,7 @@ local sortableTableFrame = {
                     asc = function(a,b) return a:upper() < b:upper() end,
                 }
             },
-            data = {
-                { "Egg", "Priest", "I'm an itiot" },
-                { "Erik", "Warlock", "Rat king prio" },
-                { "Freedom", "Warrior", "Don't worry about it :)" },
-                { "Nayuta", "Rogue", "uwu" },
-                { "Kyr", "Warrior", "Give me golden coins" },
-                { "Mattpriest", "Priest", "hide, hide, hide, hide" },
-                { "Sarcis", "Rogue", "Fucking yellows" },
-                { "Mewn", "Druid", "afk /follow" },
-                { "Wongo", "Mage", "come to my bongo bazaar" },
-                { "Quissy", "Paladin", "guide writer prio" },
-                { "Blodreina", "Paladin", "off-brand frosty" },
-            },
+            data = testData,
         }
     end,
 }
@@ -112,13 +144,22 @@ Addon.DebugWindowOptions.args = {
         name = "Sortable Table",
         childGroups = "tree",
         args = {
-            tableContainer = {
+            defaultTable = {
                 order = 0,
                 type = "group",
-                name = "Base Table with data",
+                name = "Default table",
                 inline = true,
                 args = {
-                    table = sortableTableFrame,
+                    table = defaultTableFrame,
+                }
+            },
+            classColorTable = {
+                order = 1,
+                type = "group",
+                name = "Class color table",
+                inline = true,
+                args = {
+                    table = classColorTableFrame,
                 }
             },
         },
